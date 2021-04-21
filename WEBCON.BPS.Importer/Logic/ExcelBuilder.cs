@@ -77,7 +77,7 @@ namespace WEBCON.BPS.Importer.Logic
                 ws.Cells[1, id].Value = col.Guid;
                 ws.Cells[2, id].Value = col.Type;
 
-                SetStyleOnHeaders(ws, id);
+                SetStyleOnHeaders(ws, id, type: col.Type);
             }
         }
 
@@ -95,19 +95,27 @@ namespace WEBCON.BPS.Importer.Logic
         private async Task<Dictionary<int, List<string>>> SaveAttachmentFilesAsync(ConcurrentBag<AttachmentData> attachments)
         {
             var idPathsDic = new Dictionary<int, List<string>>();
+            PrepFolder();
 
             foreach (var att in attachments)
             {
-                var path = Path.Combine(_attachmentsPath, $"{att.Id}__{att.Name}");
+                var name = $"{att.Id}__{att.Name}";
+                var path = Path.Combine(_attachmentsPath, name);
                 File.WriteAllBytes(path, await att.AttachmentProvider.GetAttachmentContentAsync());
 
                 if (idPathsDic.ContainsKey(att.ElementId))
-                    idPathsDic[att.ElementId].Add(path);
+                    idPathsDic[att.ElementId].Add(name);
                 else
-                    idPathsDic[att.ElementId] = new List<string>() { path };
+                    idPathsDic[att.ElementId] = new List<string>() { name };
             }
 
             return idPathsDic;
+        }
+
+        private void PrepFolder()
+        {
+            if (!Directory.Exists(_attachmentsPath))
+                Directory.CreateDirectory(_attachmentsPath);
         }
 
         private void SetAttachmentsPathsToCells(int attsColId, Dictionary<int, List<string>> idPathsDic, Worksheet ws)
@@ -134,7 +142,7 @@ namespace WEBCON.BPS.Importer.Logic
                     ws.Cells[rowId, colId++].Value = row.RowId;
 
                 foreach (var value in row.Values)
-                    ws.Cells[rowId, colId++].Value = value;
+                    ws.Cells[rowId, colId++].PutValue(value);
 
                 rowId++;
             }
@@ -178,8 +186,10 @@ namespace WEBCON.BPS.Importer.Logic
             _workbook.Worksheets[0].Cells[elementRow, listColsById[listId]].Value = elemId;
         }
 
-        public void SetStyleOnHeaders(Worksheet ws, int columnId, Style style = null)
+        public void SetStyleOnHeaders(Worksheet ws, int columnId, Style style = null, string type = null)
         {
+            SetColumnType(ws, columnId, type);
+
             style = style ?? CreateDefaultStyle(ws, columnId);
 
             style.SetBorder(BorderType.BottomBorder, CellBorderType.Thin, System.Drawing.Color.Black);
@@ -194,6 +204,40 @@ namespace WEBCON.BPS.Importer.Logic
             style = ws.Cells[1, columnId].GetStyle();
             style.Font.Size = 4;
             ws.Cells[1, columnId].SetStyle(style);
+
+        }
+
+        private void SetColumnType(Worksheet ws, int columnId, string type)
+        {
+            switch (type)
+            {
+                case "Date":
+                    {
+                        var colStyle = _workbook.CreateStyle();
+                        colStyle.Custom = @"[$-F800]dddd\,\ mmmm\ dd\,\ yyyy"; //Datetime long
+                        ws.Cells.Columns[columnId].ApplyStyle(colStyle, new StyleFlag() { All = true });
+
+                        break;
+                    }
+
+                case "Decimal":
+                    {
+                        var colStyle = _workbook.CreateStyle();
+                        colStyle.Number = 2; //Decimal	0.00
+                        ws.Cells.Columns[columnId].ApplyStyle(colStyle, new StyleFlag() { All = true });
+
+                        break;
+                    }
+
+                case "Int":
+                    {
+                        var colStyle = _workbook.CreateStyle();
+                        colStyle.Number = 1; //Decimal	0
+                        ws.Cells.Columns[columnId].ApplyStyle(colStyle, new StyleFlag() { All = true });
+
+                        break;
+                    }
+            }
         }
 
         private Style CreateDefaultStyle(Worksheet ws, int columnId)

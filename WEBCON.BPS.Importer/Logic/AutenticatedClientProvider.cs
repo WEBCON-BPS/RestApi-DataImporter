@@ -35,14 +35,11 @@ namespace WEBCON.BPS.Importer.Logic
             var auth = new LoginModel(_config.ClientId, _config.ClientSecret, _config.ImpersonationLogin);
 
             var request = await client.PostAsync("api/login", new StringContent(JsonConvert.SerializeObject(auth), Encoding.UTF8, "application/json"));
+            var response = await request.Content.ReadAsStringAsync();
 
             if (!request.IsSuccessStatusCode)
-            {
-                var contetnt = await request.Content.ReadAsStringAsync();
+                throw new ApiException().CreateEx(response);
 
-            }
-
-            var response = await request.Content.ReadAsStringAsync();
             var responseObject = JObject.Parse(response);
             var accessToken = (string)responseObject["token"];
 

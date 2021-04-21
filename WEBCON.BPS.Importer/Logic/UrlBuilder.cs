@@ -5,7 +5,7 @@ namespace WEBCON.BPS.Importer.Logic
     public sealed class UrlBuilder
     {
         private readonly Configuration _config;
-        private const string Version = "v2.0";
+        private const string Version = "v3.0";
 
         public UrlBuilder(Configuration config)
         {
@@ -13,6 +13,12 @@ namespace WEBCON.BPS.Importer.Logic
         }
 
         public string Applications => $"api/data/{Version}/db/{_config.DbId}/applications";
+        public string Processes(int appId) => $"api/data/{Version}/db/{_config.DbId}/applications/{appId}/processes";
+        public string Workflows(int processId) => $"api/data/{Version}/db/{_config.DbId}/processes/{processId}/workflows";
+        public string Formtypes(int processId) => $"api/data/{Version}/db/{_config.DbId}/processes/{processId}/formtypes";
+        public string Steps(int workflowId) => $"api/data/{Version}/db/{_config.DbId}/workflows/{workflowId}/steps";
+        public string AssociatedFormTypes(int workflowId) => $"api/data/{Version}/db/{_config.DbId}/workflows/{workflowId}/associatedFormTypes";
+        public string Paths(int stepId) => $"api/data/{Version}/db/{_config.DbId}/steps/{stepId}/paths";
 
         public string ReportsViewParams(string appId)
         {
@@ -27,8 +33,8 @@ namespace WEBCON.BPS.Importer.Logic
         
         public string FormTeplate(int fomrTypeId, int stepId) => $"api/data/{Version}/db/{_config.DbId}/formlayout?step={stepId}&formType={fomrTypeId}";
 
-        public string ElementAttachments(string id) => $"/api/data/{Version}/db/{_config.DbId}/elements/{id}/attachments";
+        public string ElementAttachments(string id) => $"api/data/{Version}/db/{_config.DbId}/elements/{id}/attachments";
 
-        public string AttachmentContent(string elemId, string attId) => $"/api/data/{Version}/db/{_config.DbId}/elements/{elemId}/attachments/{attId}/content";
+        public string AttachmentContent(string elemId, string attId) => $"api/data/{Version}/db/{_config.DbId}/elements/{elemId}/attachments/{attId}/content";
     }
 }

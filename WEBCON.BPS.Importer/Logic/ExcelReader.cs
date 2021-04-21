@@ -14,9 +14,11 @@ namespace WEBCON.BPS.Importer.Logic
         private readonly Workbook _workbook;
         private readonly HashSet<int> _colsToSkip = new HashSet<int>();
         private int _lastColumn;
+        private readonly string _filePath;
 
         public ExcelReader(string filePath)
         {
+            _filePath = filePath;
             _workbook = new Workbook(filePath);
         }
 
@@ -27,8 +29,8 @@ namespace WEBCON.BPS.Importer.Logic
 
             return new ImportModel
             {
-                Columns = ReadColumns(ws),
-                Rows = ReadRows(ws)
+                Columns = ReadColumns(ws).ToList(),
+                Rows = ReadRows(ws).ToList()
             };
         }
 
@@ -39,10 +41,10 @@ namespace WEBCON.BPS.Importer.Logic
                 var type = worksheet.Cells[2, i].StringValue;
                 var guid = worksheet.Cells[1, i].StringValue;
 
-                if (type.Equals("ItemList") || type.Equals("LocalAttachments") || type.Equals("RelativeAttachments") || string.IsNullOrEmpty(guid))
+                if (type.Equals("ItemList") || type.Equals("LocalAttachments") || type.Equals("RelativeAttachments") || (string.IsNullOrEmpty(guid) && !type.Equals("WFDID")))
                 {
                     _colsToSkip.Add(i);
-                    break;
+                    continue;
                 }
 
                 yield return new Model.Column(worksheet.Cells[1, i].StringValue, worksheet.Cells[0, i].StringValue, type);
@@ -56,7 +58,7 @@ namespace WEBCON.BPS.Importer.Logic
             for (int i = 3; i <= worksheet.Cells.MaxDataRow; i++)
             {
                 var row = new ImportRow();
-                var values = new List<string>();
+                var values = new List<object>();
 
                 for (int j = 0; j <= worksheet.Cells.MaxDataColumn; j++)
                 {
@@ -93,8 +95,10 @@ namespace WEBCON.BPS.Importer.Logic
 
                                     if (!string.IsNullOrEmpty(cellValue))
                                     {
-                                        var path = cellValue.Split(';');
-                                        row.AttachmentsPaths.AddRange(path);
+                                        var paths = cellValue.Split(';');
+
+                                        foreach (var path in paths)
+                                            row.AttachmentsPaths.Add(Path.Combine(Path.GetDirectoryName(_filePath), "attachments", path));
                                     }
 
                                     break;
@@ -102,7 +106,7 @@ namespace WEBCON.BPS.Importer.Logic
                         }
                     }
 
-                    values.Add(worksheet.Cells[i, j].StringValue);
+                    values.Add(worksheet.Cells[i, j].Value);
                 }
 
                 row.Values = values.ToArray();

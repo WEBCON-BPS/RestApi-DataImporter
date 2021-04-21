@@ -73,13 +73,13 @@ namespace WEBCON.BPS.Importer.Logic
             {
                 var cells = (IEnumerable<dynamic>)row.cells;
                 var id = row.id;
-                yield return new Row() { ElementId = id, Values = GetCellsStringValues(cells, columns).ToArray() };
+                yield return new Row() { ElementId = id, Values = GetCellsObjectValues(cells, columns).ToArray() };
             }
         }
 
-        private IEnumerable<string> GetCellsStringValues(IEnumerable<dynamic> cells, IEnumerable<Column> columns)
+        private IEnumerable<object> GetCellsObjectValues(IEnumerable<dynamic> cells, IEnumerable<Column> columns)
         {
-            for(int i = 0; i < columns.Count(); i++)
+            for (int i = 0; i < columns.Count(); i++)
             {
                 switch (columns.ElementAt(i).Type)
                 {
@@ -90,7 +90,7 @@ namespace WEBCON.BPS.Importer.Logic
                         {
                             var value = cells.ElementAt(i).value;
 
-                            if(value is JValue jVal)
+                            if (value is JValue jVal)
                             {
                                 yield return jVal.ToString();
                                 break;
@@ -104,11 +104,53 @@ namespace WEBCON.BPS.Importer.Logic
                             break;
                         }
 
+                    case "SurveyChoose":
+                        {
+                            var value = cells.ElementAt(i).value;
+
+                            if (value is JValue jVal)
+                            {
+                                yield return jVal.ToString();
+                                break;
+                            }
+
+                            if (value is JArray jArray)
+                            {
+                                yield return string.Join("|;", jArray.Select(x => (dynamic)x).Select(x => $"{x.id}#{x.name}"));
+                                break;
+                            }
+                            break;
+                        }
+
                     case "LocalAttachments":
                     case "RelativeAttachments":
                         {
                             //unsupported in api update
                             yield return string.Empty;
+                            break;
+                        }
+
+                    case "Int":
+                        {
+                            var value = cells.ElementAt(i).value;
+                            yield return value != null ? (int?)Convert.ToInt32(value) : null;
+
+                            break;
+                        }
+
+                    case "Decimal":
+                        {
+                            var value = cells.ElementAt(i).value;
+                            yield return value != null ? (double?)Convert.ToDouble(value) : null;
+
+                            break;
+                        }
+
+                    case "Date":
+                        {
+                            var value = cells.ElementAt(i).value;
+                            yield return value != null ? (DateTime?)Convert.ToDateTime(value) : null;
+
                             break;
                         }
 
@@ -172,7 +214,7 @@ namespace WEBCON.BPS.Importer.Logic
             foreach (var row in rows)
             {
                 var cells = (IEnumerable<dynamic>)row.cells;
-                yield return new Row() { ElementId = elementId, RowId = row.id, Values = GetCellsStringValues(cells, columns).ToArray() };
+                yield return new Row() { ElementId = elementId, RowId = row.id, Values = GetCellsObjectValues(cells, columns).ToArray() };
             }
         }
 
@@ -251,10 +293,15 @@ namespace WEBCON.BPS.Importer.Logic
 
             for (int i = 0; i < columns.Count(); i++)
             {
-                if (string.IsNullOrEmpty(columns.ElementAtOrDefault(i)?.Guid))
+                var column = columns.ElementAtOrDefault(i);
+
+                if (string.IsNullOrEmpty(column?.Guid))
                     continue;
 
-                fields.Add(new { guid = columns.ElementAtOrDefault(i).Guid, svalue = row.Values.ElementAtOrDefault(i) });
+                if(column.Type.Equals("Int") || column.Type.Equals("Decimal") || column.Type.Equals("Date"))
+                    fields.Add(new { guid = column.Guid, value = row.Values.ElementAtOrDefault(i) });
+                else
+                    fields.Add(new { guid = column.Guid, svalue = row.Values.ElementAtOrDefault(i) });
             }
 
             return fields;
@@ -267,7 +314,7 @@ namespace WEBCON.BPS.Importer.Logic
 
             var result = new List<object>();
 
-            foreach(var list in lists)
+            foreach (var list in lists)
             {
                 result.Add(new { guid = list.Guid, rows = GetRows(list) });
             }
@@ -293,10 +340,15 @@ namespace WEBCON.BPS.Importer.Logic
 
             for (int i = 0; i < list.Columns.Count(); i++)
             {
-                if (string.IsNullOrEmpty(list.Columns.ElementAtOrDefault(i)?.Guid))
+                var column = list.Columns.ElementAtOrDefault(i);
+
+                if (string.IsNullOrEmpty(column?.Guid))
                     continue;
 
-                cells.Add(new { guid = list.Columns.ElementAtOrDefault(i).Guid, svalue = row.Values.ElementAt(i) });
+                if (column.Type.Equals("Int") || column.Type.Equals("Decimal") || column.Type.Equals("Date"))
+                    cells.Add(new { guid = column.Guid, value = row.Values.ElementAtOrDefault(i) });
+                else
+                    cells.Add(new { guid = column.Guid, svalue = row.Values.ElementAtOrDefault(i) });
             }
 
             return cells;
@@ -316,7 +368,7 @@ namespace WEBCON.BPS.Importer.Logic
 
                 var name = Path.GetFileName(path).Split(new string[] { "__" }, StringSplitOptions.RemoveEmptyEntries).Last();
 
-                atts.Add(new { name = name, content = Convert.ToBase64String(File.ReadAllBytes(path))});
+                atts.Add(new { name = name, content = Convert.ToBase64String(File.ReadAllBytes(path)) });
             }
 
             return atts;
@@ -349,7 +401,7 @@ namespace WEBCON.BPS.Importer.Logic
         {
             var lists = (IEnumerable<dynamic>)result.itemLists;
 
-            foreach(var list in lists)
+            foreach (var list in lists)
             {
                 yield return new ItemListTemplate()
                 {
@@ -372,15 +424,54 @@ namespace WEBCON.BPS.Importer.Logic
 
         #endregion
 
+        #region Metadata
+
+        public async Task<IEnumerable<(int id, string name)>> GetProcesses(int appId)
+        {
+            dynamic result = await SendRequestDynamicAsync(_urlBuilder.Processes(appId), HttpMethod.Get);
+            return ((IEnumerable<dynamic>)result.processes).Select(p => ( (int)p.id, (string)p.name ));
+        }
+
+        public async Task<IEnumerable<(int id, string name)>> GetWorkflowsByProcessesId(int id)
+        {
+            dynamic result = await SendRequestDynamicAsync(_urlBuilder.Workflows(id), HttpMethod.Get);
+            return ((IEnumerable<dynamic>)result.workflows).Select(p => ((int)p.id, (string)p.name));
+        }
+
+        public async Task<IEnumerable<(int id, string name)>> GetFormTypesByProcessId(int id)
+        {
+
+            dynamic result = await SendRequestDynamicAsync(_urlBuilder.Formtypes(id), HttpMethod.Get);
+            return ((IEnumerable<dynamic>)result.formTypes).Select(p => ((int)p.id, (string)p.name));
+        }
+
+        public async Task<IEnumerable<(int id, string name)>> GetStepsByWorkflowId(int id)
+        {
+            dynamic result = await SendRequestDynamicAsync(_urlBuilder.Steps(id), HttpMethod.Get);
+            return ((IEnumerable<dynamic>)result.steps).Select(p => ((int)p.id, (string)p.name));
+        }
+
+        public async Task<IEnumerable<(int id, string name)>> GetWorkflowsAssosiatedFormTypes(int id)
+        {
+            dynamic result = await SendRequestDynamicAsync(_urlBuilder.AssociatedFormTypes(id), HttpMethod.Get);
+            return ((IEnumerable<dynamic>)result.associatedFormTypes).Select(p => ((int)p.id, (string)p.name));
+        }
+
+        public async Task<IEnumerable<(int id, string name)>> GetStepsPaths(int id)
+        {
+            dynamic result = await SendRequestDynamicAsync(_urlBuilder.Paths(id), HttpMethod.Get);
+            return ((IEnumerable<dynamic>)result.paths).Select(p => ((int)p.id, (string)p.name));
+        }
+
+        #endregion
+
         private async Task<dynamic> SendRequestDynamicAsync(string link, HttpMethod method, HttpContent content = null)
         {
             var request = await _client.SendAsync(new HttpRequestMessage(method, link) { Content = content });
             var response = await request.Content.ReadAsStringAsync();
 
             if (!request.IsSuccessStatusCode)
-            {
-                throw new Exception($"{request.StatusCode}: {response}");
-            }
+                throw new ApiException().CreateEx(response);
 
             dynamic result = JsonConvert.DeserializeObject(response);
             return result;

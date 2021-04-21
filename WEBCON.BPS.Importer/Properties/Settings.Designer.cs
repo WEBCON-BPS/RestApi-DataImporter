@@ -74,12 +74,12 @@ namespace WEBCON.BPS.Importer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string WorkFlowID {
+        public string WorkFlowTemp {
             get {
-                return ((string)(this["WorkFlowID"]));
+                return ((string)(this["WorkFlowTemp"]));
             }
             set {
-                this["WorkFlowID"] = value;
+                this["WorkFlowTemp"] = value;
             }
         }
         
@@ -212,6 +212,18 @@ namespace WEBCON.BPS.Importer.Properties {
             }
             set {
                 this["Server"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string WorkFlowImport {
+            get {
+                return ((string)(this["WorkFlowImport"]));
+            }
+            set {
+                this["WorkFlowImport"] = value;
             }
         }
     }

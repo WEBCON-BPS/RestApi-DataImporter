@@ -14,7 +14,7 @@
     <Setting Name="Report" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="WorkFlowID" Type="System.String" Scope="User">
+    <Setting Name="WorkFlowTemp" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="DocTypeID" Type="System.String" Scope="User">
@@ -49,6 +49,9 @@
     </Setting>
     <Setting Name="Server" Type="System.String" Scope="User">
       <Value Profile="(Default)">https://example.webcon.pl/WEBCONBPS/</Value>
+    </Setting>
+    <Setting Name="WorkFlowImport" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

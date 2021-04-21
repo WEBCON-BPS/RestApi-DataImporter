@@ -4,8 +4,8 @@ namespace WEBCON.BPS.Importer.Model
 {
     public class ImportModel
     {
-        public IEnumerable<Column> Columns { get; set; }
-        public IEnumerable<ImportRow> Rows { get; set; }
+        public List<Column> Columns { get; set; }
+        public List<ImportRow> Rows { get; set; }
     }
 
     public class ImportRow : Row

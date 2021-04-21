@@ -12,7 +12,7 @@ namespace WEBCON.BPS.Importer.Model
     {
         public int? ElementId { get; set; }
         public int? RowId { get; set; }
-        public string[] Values { get; set; }
+        public object[] Values { get; set; }
     }
     public class Column
     {
