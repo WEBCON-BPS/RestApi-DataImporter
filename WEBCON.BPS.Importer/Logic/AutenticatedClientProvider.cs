@@ -30,7 +30,7 @@ namespace WEBCON.BPS.Importer.Logic
         private async Task<HttpClient> PrepareClient()
         {
             var client = new HttpClient();
-            client.BaseAddress = new Uri(_config.PortalUrl);
+            client.BaseAddress = GetFixedTrailingSlashBaseAddress();
 
             var auth = new LoginModel(_config.ClientId, _config.ClientSecret, _config.ImpersonationLogin);
 
@@ -46,6 +46,12 @@ namespace WEBCON.BPS.Importer.Logic
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             return client;
+        }
+
+        private Uri GetFixedTrailingSlashBaseAddress()
+        {
+            var url = _config.PortalUrl.EndsWith("/") ? _config.PortalUrl : $"{_config.PortalUrl}/";
+            return new Uri(url);
         }
     }
 }

@@ -37,12 +37,13 @@
             this.lElements = new System.Windows.Forms.Label();
             this.bgImporter = new System.ComponentModel.BackgroundWorker();
             this.label9 = new System.Windows.Forms.Label();
-            this.tbExportReport = new System.Windows.Forms.TextBox();
             this.label10 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.tabMain = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.cbExportView = new System.Windows.Forms.ComboBox();
+            this.cbExportReport = new System.Windows.Forms.ComboBox();
             this.numericPage = new System.Windows.Forms.NumericUpDown();
             this.numericSize = new System.Windows.Forms.NumericUpDown();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -52,7 +53,6 @@
             this.cbSubs = new System.Windows.Forms.CheckBox();
             this.Size_Label = new System.Windows.Forms.Label();
             this.Page_Lable = new System.Windows.Forms.Label();
-            this.tbExportView = new System.Windows.Forms.TextBox();
             this.label18 = new System.Windows.Forms.Label();
             this.exportProgressBar = new System.Windows.Forms.ProgressBar();
             this.lexportReport = new System.Windows.Forms.Label();
@@ -183,14 +183,6 @@
             this.label9.TabIndex = 39;
             this.label9.Text = "Report Id";
             // 
-            // tbExportReport
-            // 
-            this.tbExportReport.Location = new System.Drawing.Point(128, 16);
-            this.tbExportReport.Name = "tbExportReport";
-            this.tbExportReport.Size = new System.Drawing.Size(385, 20);
-            this.tbExportReport.TabIndex = 0;
-            this.tbExportReport.Text = "99";
-            // 
             // label10
             // 
             this.label10.AutoSize = true;
@@ -234,18 +226,18 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.cbExportView);
+            this.tabPage1.Controls.Add(this.cbExportReport);
             this.tabPage1.Controls.Add(this.numericPage);
             this.tabPage1.Controls.Add(this.numericSize);
             this.tabPage1.Controls.Add(this.groupBox2);
             this.tabPage1.Controls.Add(this.Size_Label);
             this.tabPage1.Controls.Add(this.Page_Lable);
-            this.tabPage1.Controls.Add(this.tbExportView);
             this.tabPage1.Controls.Add(this.label18);
             this.tabPage1.Controls.Add(this.exportProgressBar);
             this.tabPage1.Controls.Add(this.lexportReport);
             this.tabPage1.Controls.Add(this.label16);
             this.tabPage1.Controls.Add(this.btn_Export);
-            this.tabPage1.Controls.Add(this.tbExportReport);
             this.tabPage1.Controls.Add(this.label9);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Margin = new System.Windows.Forms.Padding(2);
@@ -255,6 +247,29 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Export";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // cbExportView
+            // 
+            this.cbExportView.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbExportView.Enabled = false;
+            this.cbExportView.FormattingEnabled = true;
+            this.cbExportView.Location = new System.Drawing.Point(128, 39);
+            this.cbExportView.Margin = new System.Windows.Forms.Padding(2);
+            this.cbExportView.Name = "cbExportView";
+            this.cbExportView.Size = new System.Drawing.Size(385, 21);
+            this.cbExportView.TabIndex = 57;
+            // 
+            // cbExportReport
+            // 
+            this.cbExportReport.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbExportReport.Enabled = false;
+            this.cbExportReport.FormattingEnabled = true;
+            this.cbExportReport.Location = new System.Drawing.Point(128, 15);
+            this.cbExportReport.Margin = new System.Windows.Forms.Padding(2);
+            this.cbExportReport.Name = "cbExportReport";
+            this.cbExportReport.Size = new System.Drawing.Size(385, 21);
+            this.cbExportReport.TabIndex = 56;
+            this.cbExportReport.SelectedIndexChanged += new System.EventHandler(this.cbExportReport_SelectedIndexChanged);
             // 
             // numericPage
             // 
@@ -372,21 +387,14 @@
             this.Page_Lable.TabIndex = 50;
             this.Page_Lable.Text = "Page";
             // 
-            // tbExportView
-            // 
-            this.tbExportView.Location = new System.Drawing.Point(128, 40);
-            this.tbExportView.Name = "tbExportView";
-            this.tbExportView.Size = new System.Drawing.Size(385, 20);
-            this.tbExportView.TabIndex = 1;
-            // 
             // label18
             // 
             this.label18.AutoSize = true;
             this.label18.Location = new System.Drawing.Point(10, 42);
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(88, 13);
+            this.label18.Size = new System.Drawing.Size(42, 13);
             this.label18.TabIndex = 49;
-            this.label18.Text = "View Id (optional)";
+            this.label18.Text = "View Id";
             // 
             // exportProgressBar
             // 
@@ -978,7 +986,6 @@
         private System.Windows.Forms.Label lElements;
         private System.ComponentModel.BackgroundWorker bgImporter;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.TextBox tbExportReport;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label12;
@@ -1007,7 +1014,6 @@
         private System.Windows.Forms.Label lImportElapsed;
         private System.Windows.Forms.Label lErrors;
         private System.Windows.Forms.Label label20;
-        private System.Windows.Forms.TextBox tbExportView;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.Label MaxImportNum_Label;
         private System.Windows.Forms.NumericUpDown MaxImportNum_UpDown;
@@ -1044,6 +1050,8 @@
         private System.Windows.Forms.NumericUpDown numericSize;
         private System.Windows.Forms.ComboBox cbTempWorkflows;
         private System.Windows.Forms.Label labelTempWorkflows;
+        private System.Windows.Forms.ComboBox cbExportReport;
+        private System.Windows.Forms.ComboBox cbExportView;
     }
 }
 

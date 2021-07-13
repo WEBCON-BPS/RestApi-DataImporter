@@ -416,9 +416,9 @@ namespace WEBCON.BPS.Importer.Logic
 
         private IEnumerable<Column> ParseTemplateColumns(dynamic result)
         {
-            var cols = (IEnumerable<dynamic>)result.Columns;
+            var cols = (IEnumerable<dynamic>)result.columns;
 
-            foreach (var col in cols)
+            foreach (var col in cols ?? Enumerable.Empty<dynamic>())
                 yield return new Column(col.guid?.ToString(), col.name?.ToString(), col.type?.ToString());
         }
 
@@ -461,6 +461,18 @@ namespace WEBCON.BPS.Importer.Logic
         {
             dynamic result = await SendRequestDynamicAsync(_urlBuilder.Paths(id), HttpMethod.Get);
             return ((IEnumerable<dynamic>)result.paths).Select(p => ((int)p.id, (string)p.name));
+        }
+
+        public async Task<IEnumerable<(int id, string name)>> GetReportsMetadata(int appId)
+        {
+            dynamic result = await SendRequestDynamicAsync(_urlBuilder.ReportsMetadata(appId), HttpMethod.Get);
+            return ((IEnumerable<dynamic>)result.reports).Select(r => ((int)r.id, (string)r.name));
+        }
+
+        public async Task<IEnumerable<(int id, string name)>> GetReportViews(int id)
+        {
+            dynamic result = await SendRequestDynamicAsync(_urlBuilder.ReportViews(id), HttpMethod.Get);
+            return ((IEnumerable<dynamic>)result.views).Select(v => ((int)v.id, (string)v.name));
         }
 
         #endregion

@@ -5,7 +5,7 @@ namespace WEBCON.BPS.Importer.Logic
     public sealed class UrlBuilder
     {
         private readonly Configuration _config;
-        private const string Version = "v3.0";
+        private const string Version = "beta";
 
         public UrlBuilder(Configuration config)
         {
@@ -36,5 +36,8 @@ namespace WEBCON.BPS.Importer.Logic
         public string ElementAttachments(string id) => $"api/data/{Version}/db/{_config.DbId}/elements/{id}/attachments";
 
         public string AttachmentContent(string elemId, string attId) => $"api/data/{Version}/db/{_config.DbId}/elements/{elemId}/attachments/{attId}/content";
+
+        public string ReportsMetadata(int appId) => $"api/data/{Version}/db/{_config.DbId}/applications/{appId}/reports";
+        public string ReportViews(int reportId) => $"api/data/{Version}/db/{_config.DbId}/reports/{reportId}/views";
     }
 }

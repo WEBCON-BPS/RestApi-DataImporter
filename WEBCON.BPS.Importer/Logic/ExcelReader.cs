@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using WEBCON.BPS.Importer.Helpers;
@@ -15,6 +16,10 @@ namespace WEBCON.BPS.Importer.Logic
         private readonly HashSet<int> _colsToSkip = new HashSet<int>();
         private int _lastColumn;
         private readonly string _filePath;
+
+        private const string BadColor = "#ffffc7ce";
+        private const string NeutralColor = "#ffffeb9c";
+        private const string GoodColor = "#ffc6efce";
 
         public ExcelReader(string filePath)
         {
@@ -188,18 +193,24 @@ namespace WEBCON.BPS.Importer.Logic
 
         private void ApplyRowStyle(ElementResult result, int rowId)
         {
-            var styleFlag = new StyleFlag() { All = true };
-
-            Style style;
-
             if (result.Error != null)
-                style = _workbook.CreateBuiltinStyle(BuiltinStyleType.Bad);
+                SetBackgroudColorAndPerserveStyle(rowId, ColorTranslator.FromHtml(BadColor));
             else if (result.Success.status.Equals("Saved"))
-                style = _workbook.CreateBuiltinStyle(BuiltinStyleType.Neutral);
+                SetBackgroudColorAndPerserveStyle(rowId, ColorTranslator.FromHtml(NeutralColor));
             else
-                style = _workbook.CreateBuiltinStyle(BuiltinStyleType.Good);
+                SetBackgroudColorAndPerserveStyle(rowId, ColorTranslator.FromHtml(GoodColor));
+        }
 
-            _workbook.Worksheets[0].Cells.ApplyRowStyle(rowId, style, new StyleFlag() { All = true });
+        private void SetBackgroudColorAndPerserveStyle(int rowId, Color color)
+        {
+            for (int i = 0; i <= _workbook.Worksheets[0].Cells.MaxDataColumn; i++)
+            {
+                var cell = _workbook.Worksheets[0].Cells[rowId, i];
+                var style = cell.GetStyle();
+                style.ForegroundColor = color;
+                style.Pattern = BackgroundType.Solid;
+                cell.SetStyle(style);
+            }
         }
 
         public void SaveReport(string ogrinalName)

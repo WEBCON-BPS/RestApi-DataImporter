@@ -36,11 +36,33 @@ namespace WEBCON.BPS.Importer.Logic
             foreach (var process in processes)
                 metadata.Append(await GetDataForProcess(process.id));
 
+            await AppendReports(appId, metadata);
+
             lock (_lock)
             {
                 if(!_appsMetadataDic.ContainsKey(appId))
                     _appsMetadataDic.Add(appId, metadata);
             }
+        }
+
+        private async Task AppendReports(int appId, MetadataModel model)
+        {
+            var reports = await _apiManager.GetReportsMetadata(appId);
+            var tasks = reports.Select(s => BuildReportAsync(s.id, s.name)).ToArray();
+            var reportsData = await Task.WhenAll(tasks);
+
+            model.Reports = reportsData.ToDictionary(r => r.id, r => r);
+        }
+
+        private async Task<Report> BuildReportAsync(int id, string name)
+        {
+            var report = new Report();
+
+            report.id = id;
+            report.name = name;
+            report.Views = (await _apiManager.GetReportViews(id)).ToDictionary(v => v.id, v => v.name);
+
+            return report;
         }
 
         private async Task<MetadataModel> GetDataForProcess(int processId)

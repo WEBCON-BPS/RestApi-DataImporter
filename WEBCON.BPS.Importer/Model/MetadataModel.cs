@@ -6,6 +6,7 @@ namespace WEBCON.BPS.Importer.Model
     {
         public Dictionary<int, string> Formtypes { get; set; } = new Dictionary<int, string>();
         public Dictionary<int, Workflow> Workflows { get; set; } = new Dictionary<int, Workflow>();
+        public Dictionary<int, Report> Reports { get; set; } = new Dictionary<int, Report>();
 
         public void Append(MetadataModel model)
         {
@@ -32,5 +33,12 @@ namespace WEBCON.BPS.Importer.Model
         public int id { get; set; }
         public string name { get; set; }
         public Dictionary<int, string> Paths { get; set; } = new Dictionary<int, string>();
+    }
+
+    public class Report
+    {
+        public int id { get; set; }
+        public string name { get; set; }
+        public Dictionary<int, string> Views { get; set; } = new Dictionary<int, string>();
     }
 }

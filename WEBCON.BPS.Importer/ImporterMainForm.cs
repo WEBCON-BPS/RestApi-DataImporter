@@ -41,10 +41,10 @@ namespace WEBCON.BPS.Importer.Forms
                     DbId = Convert.ToInt32(tbDBID.Value)
                 };
 
-                if (int.TryParse(tbExportReport.Text, out var report))
+                if (int.TryParse(cbExportReport.SelectedValue?.ToString(), out var report))
                     config.ReportId = report;
 
-                if (int.TryParse(tbExportView.Text, out var view))
+                if (int.TryParse(cbExportView.SelectedValue?.ToString(), out var view))
                     config.ViewId = view;
 
                 config.Page = Convert.ToInt32(numericPage.Value);
@@ -302,7 +302,7 @@ namespace WEBCON.BPS.Importer.Forms
                         reader.SaveReport(tbStartFile.Text);
 
 
-                        if (MessageBox.Show($"{data.Rows.Count()} workflow instances have been imported in {timer.Elapsed.TotalSeconds} seconds. Do you want to open the result file?", "Import result", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                        if (MessageBox.Show($"{Math.Min(data.Rows.Count(), (int)MaxImportNum_UpDown.Value)} workflow instances have been imported in {timer.Elapsed.TotalSeconds} seconds. Do you want to open the result file?", "Import result", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                         {
                             ProcessStartInfo pi = new ProcessStartInfo(saveFileDialog1.FileName);
                             pi.Arguments = Path.GetFileName(saveFileDialog1.FileName);
@@ -343,12 +343,12 @@ namespace WEBCON.BPS.Importer.Forms
 
         private void SetProgress(int current, int max, ProgressCounter counter)
         {
-            importProgressBar.Value = max == 1 ? current/max : (int)Math.Round((double)(100 * current) / (max - 1));
+                importProgressBar.Value = max == 1 ? current / max : (int)Math.Round((double)(100 * current) / (max - 1));
 
-            lElements.Text = counter.Elements.ToString();
-            lStarted.Text = counter.Started.ToString();
-            lUpdated.Text = counter.Updated.ToString();
-            lErrors.Text = counter.Errors.ToString();
+                lElements.Text = counter.Elements.ToString();
+                lStarted.Text = counter.Started.ToString();
+                lUpdated.Text = counter.Updated.ToString();
+                lErrors.Text = counter.Errors.ToString();
         }
 
         private void ClearProgress()
@@ -366,8 +366,6 @@ namespace WEBCON.BPS.Importer.Forms
             tbPortal.Text = Properties.Settings.Default.Server;
             tbSecret.Text = Properties.Settings.Default.clientSecret;
             tbClientID.Text = Properties.Settings.Default.clientID;
-            tbExportReport.Text = Properties.Settings.Default.Report;
-            tbExportView.Text = Properties.Settings.Default.ViewID;
             tbUser.Text = Properties.Settings.Default.User;
             tbDBID.Text = Properties.Settings.Default.DBID;
         }
@@ -376,8 +374,8 @@ namespace WEBCON.BPS.Importer.Forms
             Properties.Settings.Default.Server = tbPortal.Text;
             Properties.Settings.Default.clientSecret = tbSecret.Text;
             Properties.Settings.Default.clientID = tbClientID.Text;
-            Properties.Settings.Default.Report = tbExportReport.Text;
-            Properties.Settings.Default.ViewID = tbExportView.Text;
+            Properties.Settings.Default.Report = cbExportReport.SelectedIndex.ToString();
+            Properties.Settings.Default.ViewID = cbExportView.SelectedIndex.ToString();
             Properties.Settings.Default.User = tbUser.Text;
             Properties.Settings.Default.DBID = tbDBID.Text;
             Properties.Settings.Default.ApplicationID = cbApplications.SelectedIndex.ToString();
@@ -393,7 +391,62 @@ namespace WEBCON.BPS.Importer.Forms
                 return;
 
             var model = await _metadataProvider.GetModel(id);
+            SetReports(model);
             SetWorkflows(model);
+        }
+
+        private void SetReports(MetadataModel model)
+        {
+            cbExportReport.Enabled = false;
+
+            try
+            {
+                cbExportReport.SelectedIndex = -1;
+
+                var reports = model.Reports.Select(r => new { id = r.Key, name = $"{r.Value.name} ({r.Value.id})" }).OrderBy(r => r.name).ToList();
+                var bindingSource = new BindingSource(reports, null);
+
+                cbExportReport.ValueMember = "id";
+                cbExportReport.DisplayMember = "name";
+                cbExportReport.DataSource = bindingSource;
+
+                if (int.TryParse(Properties.Settings.Default.Report, out var rid) && rid < bindingSource.Count)
+                    cbExportReport.SelectedIndex = rid;
+                else
+                    cbExportReport.SelectedIndex = cbExportReport.Items.Count - 1;
+            }
+            finally
+            {
+                cbExportReport.Enabled = true;
+            }
+        }
+
+        private async void cbExportReport_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!int.TryParse(cbApplications.SelectedValue?.ToString(), out var appId) || appId < 1
+                || !int.TryParse(((ComboBox)sender).SelectedValue?.ToString(), out var repId) || repId < 1)
+                return;
+
+            var model = await _metadataProvider.GetModel(appId);
+
+            cbExportView.Enabled = false;
+
+            try
+            {
+                if (!model.Reports.TryGetValue(repId, out var report))
+                    return;
+
+                var views = report.Views.Select(v => new { id = v.Key, name = $"{v.Value} ({v.Key})" }).OrderBy(v => v.name).ToList();
+                var bindingSource = new BindingSource(views, null);
+
+                cbExportView.ValueMember = "id";
+                cbExportView.DisplayMember = "name";
+                cbExportView.DataSource = bindingSource;
+            }
+            finally
+            {
+                cbExportView.Enabled = true;
+            }
         }
 
         private void SetWorkflows(MetadataModel model)
