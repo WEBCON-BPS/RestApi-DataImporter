@@ -28,14 +28,14 @@ Error guid: {aex.Guid}";
             }
         }
 
-        private void SaveErrorLogs(string log)
+        public void SaveErrorLogs(string log)
         {
             try
             {
                 if (!Directory.Exists("logs"))
                     Directory.CreateDirectory("logs");
 
-                var path = $"logs\\ErrorLog_{DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}.txt";
+                var path = $"logs\\ErrorLog_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt";
                 File.WriteAllText(path, log);
             }
             catch (Exception ex)

@@ -41,7 +41,7 @@ namespace WEBCON.BPS.Importer.Logic
 
         private IEnumerable<Model.Column> ReadColumns(Worksheet worksheet)
         {
-            for(int i = 0; i < worksheet.Cells.MaxDataColumn; i++)
+            for(int i = 0; i <= worksheet.Cells.MaxDataColumn; i++)
             {
                 var type = worksheet.Cells[2, i].StringValue;
                 var guid = worksheet.Cells[1, i].StringValue;

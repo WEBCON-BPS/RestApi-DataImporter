@@ -87,6 +87,7 @@
   <ItemGroup>
     <Compile Include="Logic\ExceptionsHandler.cs" />
     <Compile Include="Logic\MetadataProvider.cs" />
+    <Compile Include="Logic\RestLogger.cs" />
     <Compile Include="Model\ApiException.cs" />
     <Compile Include="Model\ApiFailureResponse.cs" />
     <Compile Include="Model\Enums.cs" />

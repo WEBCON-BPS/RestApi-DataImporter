@@ -16,6 +16,7 @@ namespace WEBCON.BPS.Importer.Logic
         private readonly HttpClient _client;
         private readonly Configuration _config;
         private readonly UrlBuilder _urlBuilder;
+        private readonly RestRequestLogger _logger = new RestRequestLogger();
 
         public ApiManager(HttpClient client, Configuration config)
         {
@@ -301,7 +302,7 @@ namespace WEBCON.BPS.Importer.Logic
                 if(column.Type.Equals("Int") || column.Type.Equals("Decimal") || column.Type.Equals("Date"))
                     fields.Add(new { guid = column.Guid, value = row.Values.ElementAtOrDefault(i) });
                 else
-                    fields.Add(new { guid = column.Guid, svalue = row.Values.ElementAtOrDefault(i) });
+                    fields.Add(new { guid = column.Guid, svalue = row.Values.ElementAtOrDefault(i) ?? string.Empty });
             }
 
             return fields;
@@ -428,20 +429,25 @@ namespace WEBCON.BPS.Importer.Logic
 
         public async Task<IEnumerable<(int id, string name)>> GetProcesses(int appId)
         {
-            dynamic result = await SendRequestDynamicAsync(_urlBuilder.Processes(appId), HttpMethod.Get);
+            dynamic result = await SendRequestDynamicAsync(_urlBuilder.Processes(appId), HttpMethod.Get, skipErrors: true);
+            if (result == null)
+                return Enumerable.Empty<(int id, string name)>();
             return ((IEnumerable<dynamic>)result.processes).Select(p => ( (int)p.id, (string)p.name ));
         }
 
         public async Task<IEnumerable<(int id, string name)>> GetWorkflowsByProcessesId(int id)
         {
-            dynamic result = await SendRequestDynamicAsync(_urlBuilder.Workflows(id), HttpMethod.Get);
+            dynamic result = await SendRequestDynamicAsync(_urlBuilder.Workflows(id), HttpMethod.Get, skipErrors: true);
+            if (result == null)
+                return Enumerable.Empty<(int id, string name)>();
             return ((IEnumerable<dynamic>)result.workflows).Select(p => ((int)p.id, (string)p.name));
         }
 
         public async Task<IEnumerable<(int id, string name)>> GetFormTypesByProcessId(int id)
         {
-
-            dynamic result = await SendRequestDynamicAsync(_urlBuilder.Formtypes(id), HttpMethod.Get);
+            dynamic result = await SendRequestDynamicAsync(_urlBuilder.Formtypes(id), HttpMethod.Get, skipErrors: true);
+            if (result == null)
+                return Enumerable.Empty<(int id, string name)>();
             return ((IEnumerable<dynamic>)result.formTypes).Select(p => ((int)p.id, (string)p.name));
         }
 
@@ -477,13 +483,22 @@ namespace WEBCON.BPS.Importer.Logic
 
         #endregion
 
-        private async Task<dynamic> SendRequestDynamicAsync(string link, HttpMethod method, HttpContent content = null)
+        private async Task<dynamic> SendRequestDynamicAsync(string link, HttpMethod method, HttpContent content = null, bool skipErrors = false)
         {
             var request = await _client.SendAsync(new HttpRequestMessage(method, link) { Content = content });
+            var log = _logger.LogRequestToSB(request);
+
             var response = await request.Content.ReadAsStringAsync();
 
             if (!request.IsSuccessStatusCode)
+            {
+                _logger.LogResponseMessage(request, response, log);
+
+                if (skipErrors)
+                    return null;
+
                 throw new ApiException().CreateEx(response);
+            }
 
             dynamic result = JsonConvert.DeserializeObject(response);
             return result;
