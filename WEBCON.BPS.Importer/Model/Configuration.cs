@@ -5,7 +5,6 @@
         public string PortalUrl { get; set; }
         public string ClientId { get; set; }
         public string ClientSecret { get; set; }
-        public string ImpersonationLogin { get; set; }
         public int DbId { get; set; }
 
         public int? ReportId { get; set; }

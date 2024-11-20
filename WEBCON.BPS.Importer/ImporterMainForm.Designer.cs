@@ -91,8 +91,6 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.tbDBID = new System.Windows.Forms.NumericUpDown();
             this.label22 = new System.Windows.Forms.Label();
-            this.label17 = new System.Windows.Forms.Label();
-            this.tbUser = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
             this.tbSecret = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
@@ -782,8 +780,6 @@
             // 
             this.groupBox1.Controls.Add(this.tbDBID);
             this.groupBox1.Controls.Add(this.label22);
-            this.groupBox1.Controls.Add(this.label17);
-            this.groupBox1.Controls.Add(this.tbUser);
             this.groupBox1.Controls.Add(this.label14);
             this.groupBox1.Controls.Add(this.tbSecret);
             this.groupBox1.Controls.Add(this.label13);
@@ -824,24 +820,6 @@
             this.label22.Size = new System.Drawing.Size(68, 13);
             this.label22.TabIndex = 71;
             this.label22.Text = "Database Id:";
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(8, 86);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(101, 13);
-            this.label17.TabIndex = 69;
-            this.label17.Text = "User to impersonate";
-            // 
-            // tbUser
-            // 
-            this.tbUser.AccessibleDescription = "3e7392e9-906c-42a4-8402-e9abca07af65";
-            this.tbUser.Location = new System.Drawing.Point(132, 84);
-            this.tbUser.Name = "tbUser";
-            this.tbUser.Size = new System.Drawing.Size(243, 20);
-            this.tbUser.TabIndex = 4;
-            this.tbUser.Tag = "";
             // 
             // label14
             // 
@@ -884,7 +862,7 @@
             // btnConnect
             // 
             this.btnConnect.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnConnect.Location = new System.Drawing.Point(385, 66);
+            this.btnConnect.Location = new System.Drawing.Point(381, 43);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Size = new System.Drawing.Size(136, 38);
             this.btnConnect.TabIndex = 5;
@@ -1021,8 +999,6 @@
         private System.Windows.Forms.Label Size_Label;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label label22;
-        private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.TextBox tbUser;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.TextBox tbSecret;
         private System.Windows.Forms.Label label13;

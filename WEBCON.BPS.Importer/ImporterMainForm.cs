@@ -36,7 +36,6 @@ namespace WEBCON.BPS.Importer.Forms
                 {
                     ClientId = tbClientID.Text,
                     ClientSecret = tbSecret.Text,
-                    ImpersonationLogin = tbUser.Text,
                     PortalUrl = tbPortal.Text,
                     DbId = Convert.ToInt32(tbDBID.Value)
                 };
@@ -366,7 +365,6 @@ namespace WEBCON.BPS.Importer.Forms
             tbPortal.Text = Properties.Settings.Default.Server;
             tbSecret.Text = Properties.Settings.Default.clientSecret;
             tbClientID.Text = Properties.Settings.Default.clientID;
-            tbUser.Text = Properties.Settings.Default.User;
             tbDBID.Text = Properties.Settings.Default.DBID;
         }
         private void StoreLastValue()
@@ -376,7 +374,6 @@ namespace WEBCON.BPS.Importer.Forms
             Properties.Settings.Default.clientID = tbClientID.Text;
             Properties.Settings.Default.Report = cbExportReport.SelectedIndex.ToString();
             Properties.Settings.Default.ViewID = cbExportView.SelectedIndex.ToString();
-            Properties.Settings.Default.User = tbUser.Text;
             Properties.Settings.Default.DBID = tbDBID.Text;
             Properties.Settings.Default.ApplicationID = cbApplications.SelectedIndex.ToString();
             Properties.Settings.Default.WorkFlowTemp = cbTempWorkflows.SelectedIndex.ToString();
