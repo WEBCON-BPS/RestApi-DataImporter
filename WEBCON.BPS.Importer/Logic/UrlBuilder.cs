@@ -5,7 +5,7 @@ namespace WEBCON.BPS.Importer.Logic
     public sealed class UrlBuilder
     {
         private readonly Configuration _config;
-        private const string Version = "beta";
+        private const string Version = "v6.0";
 
         public UrlBuilder(Configuration config)
         {

@@ -1,9 +1,8 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 using WEBCON.BPS.Importer.Model;
 
@@ -31,27 +30,39 @@ namespace WEBCON.BPS.Importer.Logic
         {
             var client = new HttpClient();
             client.BaseAddress = GetFixedTrailingSlashBaseAddress();
+            var auth = new LoginModel(_config.ClientId, _config.ClientSecret);
+            var response = await TryGetTokenAsync(client, auth);
+            var result = await response.Content.ReadAsStringAsync();
 
-            var auth = new LoginModel(_config.ClientId, _config.ClientSecret, _config.ImpersonationLogin);
+            if (!response.IsSuccessStatusCode)
+                throw new ApiException().CreateEx(result);
 
-            var request = await client.PostAsync("api/login", new StringContent(JsonConvert.SerializeObject(auth), Encoding.UTF8, "application/json"));
-            var response = await request.Content.ReadAsStringAsync();
-
-            if (!request.IsSuccessStatusCode)
-                throw new ApiException().CreateEx(response);
-
-            var responseObject = JObject.Parse(response);
-            var accessToken = (string)responseObject["token"];
+            var accessToken = JsonConvert.DeserializeObject<Token>(result).access_token;
 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-
             return client;
+        }
+
+        private async Task<HttpResponseMessage> TryGetTokenAsync(HttpClient client, LoginModel credentials)
+        {
+            var parms = new Dictionary<string, string>
+            {
+                { "client_id", credentials.ClientId },
+                { "client_secret", credentials.ClientSecret },
+                { "grant_type", "client_credentials" }
+            };
+            return await client.PostAsync("api/oauth2/token", new FormUrlEncodedContent(parms));
         }
 
         private Uri GetFixedTrailingSlashBaseAddress()
         {
             var url = _config.PortalUrl.EndsWith("/") ? _config.PortalUrl : $"{_config.PortalUrl}/";
             return new Uri(url);
+        }
+
+        internal struct Token
+        {
+            public string access_token { get; set; }
         }
     }
 }
